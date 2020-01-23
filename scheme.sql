@@ -27,7 +27,7 @@ CREATE TABLE forum (
   post_count integer default 0 not null
 );
 
-CREATE INDEX idx_forum_slug ON forum (slug);
+CREATE INDEX idx_forum_slug ON forum using hash(slug);
 
 CREATE TABLE forum_user (
   nickname citext references "user",
@@ -50,7 +50,7 @@ CREATE TABLE thread (
 
 CREATE INDEX idx_thread_id ON thread(id);
 CREATE INDEX idx_thread_slug ON thread(slug);
-CREATE INDEX idx_thread_f_slug ON thread(forum_slug, created);
+CREATE INDEX idx_thread_coverage ON thread (forum_slug, created, id, slug, user_nick, title, message, votes);
 
 CREATE TABLE vote (
   nickname citext references "user",
@@ -112,3 +112,36 @@ DROP TRIGGER IF EXISTS create_path ON post;
 
 CREATE TRIGGER create_path BEFORE INSERT ON post
   FOR EACH ROW EXECUTE PROCEDURE create_path();
+
+CREATE TABLE post_count(count bigint);
+
+CREATE FUNCTION post_count() RETURNS trigger
+    LANGUAGE plpgsql AS
+$$BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE post_count SET count = count + 1;
+
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE post_count SET count = count - 1;
+
+        RETURN OLD;
+    ELSE
+        UPDATE post_count SET count = 0;
+
+        RETURN NULL;
+    END IF;
+END;$$;
+
+CREATE CONSTRAINT TRIGGER post_count_mod
+    AFTER INSERT OR DELETE ON post
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW EXECUTE PROCEDURE post_count();
+
+-- TRUNCATE triggers must be FOR EACH STATEMENT
+CREATE TRIGGER post_count_trunc AFTER TRUNCATE ON post
+    FOR EACH STATEMENT EXECUTE PROCEDURE post_count();
+
+-- initialize the counter table
+INSERT INTO post_count
+SELECT count(*) FROM post;

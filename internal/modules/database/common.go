@@ -19,7 +19,7 @@ func Clear(db *pgx.ConnPool) error {
 	return err
 }
 
-const statusQuery = `SELECT (SELECT COUNT(*) FROM forum), (SELECT COUNT(*) FROM thread), (SELECT COUNT(*) FROM post), (SELECT COUNT(*) FROM "user")`
+const statusQuery = `SELECT (SELECT COUNT(*) FROM forum), (SELECT COUNT(*) FROM thread), (SELECT count FROM post_count), (SELECT COUNT(*) FROM "user")`
 
 func Status(db *pgx.ConnPool, s *models.Status) error {
 	return db.QueryRow(statusQuery).Scan(&s.Forum, &s.Thread, &s.Post, &s.User)

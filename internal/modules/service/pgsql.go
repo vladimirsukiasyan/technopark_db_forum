@@ -18,7 +18,7 @@ type ForumPgsql struct {
 func NewForumPgsql(config *pgx.ConnConfig) *ForumPgsql {
 	poolConfig := pgx.ConnPoolConfig{
 		ConnConfig:     *config,
-		MaxConnections: 50,
+		MaxConnections: 8,
 		AfterConnect:   nil,
 		AcquireTimeout: 0,
 	}

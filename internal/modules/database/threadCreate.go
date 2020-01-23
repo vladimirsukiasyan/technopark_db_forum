@@ -8,11 +8,7 @@ import (
 const (
 	insertThread = `
 	INSERT INTO thread (slug, user_nick, created, forum_slug, title, message) 
-	VALUES ($1,
-	(SELECT u.nickname FROM "user" u WHERE u.nickname = $2),
-	$3,
-	(SELECT f.slug FROM forum f WHERE f.slug = $4)	
-	,$5, $6)
+	VALUES ($1,$2,$3,$4,$5,$6)
 	RETURNING id, slug, user_nick, created, forum_slug, title, message, votes
 	`
 )
