@@ -73,11 +73,7 @@ CREATE TABLE post (
   thread_id integer references thread NOT NULL
 );
 
-CREATE INDEX idx_post_id ON post(id);
-CREATE INDEX idx_post_id ON post(author TEXT_PATTERN_OPS);
-CREATE INDEX idx_post_thread_id ON post(thread_id);
-CREATE INDEX idx_post_cr_id ON post(created, id, thread_id);
-CREATE INDEX idx_post_thread_id_cr_i ON post(thread_id, id);
+CREATE INDEX ON post(thread_id, id, created, author, edited, message, parent_id, forum_slug);
 CREATE INDEX idx_post_thread_id_p_i ON post(thread_id, (path[1]), id);
 
 CREATE OR REPLACE FUNCTION change_edited_post() RETURNS trigger as $change_edited_post$
